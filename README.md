@@ -17,7 +17,7 @@ Original GitHub repository of the fonts][open-relay]
 [fairfax]: https://www.kreativekorp.com/software/fonts/fairfax/
 [fairfax hd]: https://www.kreativekorp.com/software/fonts/fairfaxhd/
 [XdPUA]: https://wiki.xdi8.top/wiki/希顶字母PUA编码
-[open-relay]: (https://github.com/kreativekorp/open-relay)
+[open-relay]: https://github.com/kreativekorp/open-relay
 
 ## 选择版本<br>Which version to download
 
