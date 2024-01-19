@@ -1,55 +1,108 @@
 import fontforge
-font = fontforge.activeFont()
 
-# Remove unused glyphs
+def patch(font: fontforge.font, legacy=True):
+	"""
+	:param legacy: Set to False for the new community encoding standard.
+		(see https://wiki.xdi8.top/index.php?oldid=32456)
+		Note: due to the new standard having added, removed and modified some of the letters,
+		currently only partial support is available
+	"""
+	suffix = "XdPUA" if legacy else "Xdi8"
 
-font.encoding = "UnicodeFull"
-font.selection.select(("unicode", "ranges"), 0xe000, 0xf8ff)
-font.selection.select(("more", "unicode", "ranges"), 0xf0000, 0x10ffff)
-font.selection.select(("less", "unicode"), 0xf800)
-font.selection.select(("less", "unicode", "ranges"), 0xf1b00, 0xf1c3f)
-font.selection.select(("more", "ranges"), 0x110000, len(font) - 1)
-font.selection.select(("less",), ".notdef")
+	# Remove unused glyphs
 
-for glyph in font.selection.byGlyphs:
-	font.removeGlyph(glyph)
+	font.encoding = "UnicodeFull"
+	font.selection.select(("unicode", "ranges"), 0xe000, 0xf8ff)
+	font.selection.select(("more", "unicode", "ranges"), 0xf0000, 0x10ffff)
+	font.selection.select(("less", "unicode"), 0xf800)
+	font.selection.select(("less", "unicode", "ranges"), 0xf1b00, 0xf1c3f)
+	font.selection.select(("more", "ranges"), 0x110000, len(font) - 1)
+	font.selection.select(("less",), ".notdef")
 
-font.encoding = "compacted"
+	for glyph in font.selection.byGlyphs:
+		font.removeGlyph(glyph)
 
-# Define alternative codepoints for shidinn characters
+	font.encoding = "compacted"
 
-def setAlt(uni, altuni):
-	font.createChar(uni).altuni = ((altuni, -1, 0),)
+	# Define alternative codepoints for shidinn characters
 
-for ind in range(89):
-	for cas in range(3):
-		setAlt(0xf1b00 + ind + cas * 0x60, 0xe020 + ind + (ind >> 4 << 5) + (cas << 4))
+	def setAlt(uni, altuni):
+		font.createChar(uni).altuni = ((altuni, -1, 0),)
 
-for i in range(1, 10):
-	setAlt(0xf1c20 + i, 0xe000 + i)
-setAlt(0xf1c20, 0xe00a)
-setAlt(0xf1c2a, 0xe00b)
-setAlt(0xf1c2b, 0xe00c)
-setAlt(0xf1bbd, 0xe00d)
-setAlt(0xf1bbe, 0xe00e)
-setAlt(0xf1bbf, 0xe00f)
+	## basic letters: new #x00-2d = old #0-45
+	for ind in range(89 if legacy else 46):
+		for cas in range(3):
+			setAlt(0xf1b00 + ind + cas * 0x60, 0xe020 + ind % 16 + cas * 16 + ind // 16 * 48)
 
-for i in range(3):
-	setAlt(0xf1c30 + i, 0xe016 + i)
+	if not legacy:
+		## supplementary letters (newExtInd = new# - 0x40)
+		def setAltForSupplementaryLetter(ind, newExtInd):
+			for cas in range(3):
+				setAlt(0xf1b00 + ind + cas * 0x60, 0xe100 + newExtInd % 16 + cas * 16 + newExtInd // 16 * 64)
 
-# Reencode
-font.encoding = "UnicodeFull"
+		for ind in range(46, 78):
+			setAltForSupplementaryLetter(ind, ind - 46) # new #x40-5f = old #46-95
 
-# Patch metadata
-name = font.fullname
-font.fontname += "XdPUA"
-font.fullname += " XdPUA"
-font.familyname += " XdPUA"
-font.copyright = "%s XdPua by DGCK81LNN, based on %s by Kreative Software, version %s.\n\n" % (name, name, font.version) + font.copyright
-font.weight = ""
+		setAltForSupplementaryLetter(82, 0x20) # new #x60 = old #82 音
 
-sfntNames = []
-for entry in font.sfnt_names:
-	if entry[1] != "UniqueID":
-		sfntNames.append(entry)
-font.sfnt_names = tuple(sfntNames)
+	## miscellaneous characters
+	for i in range(1, 10):
+		setAlt(0xf1c20 + i, 0xe000 + i)
+	setAlt(0xf1c20, 0xe00a)
+	setAlt(0xf1c2a, 0xe00b)
+	setAlt(0xf1c2b, 0xe00c)
+	setAlt(0xf1bbd, 0xe00d)
+	setAlt(0xf1bbe, 0xe00e)
+	setAlt(0xf1bbf, 0xe00f)
+
+	for i in range(3):
+		setAlt(0xf1c30 + i, 0xe016 + i)
+
+	# Reencode
+	font.encoding = "UnicodeFull"
+
+	# Patch metadata
+	name = font.fullname
+	font.fontname += suffix
+	font.fullname += f" {suffix}"
+	font.familyname += f" {suffix}"
+	font.copyright = f"{font.fullname} by DGCK81LNN, based on {name} by Kreative Software, version {font.version}.\n\n{font.copyright}"
+
+	# Fix font not loading in Chrome due to corrupted OS/2 table
+	# (OTS parsing error: OS/2: Failed to parse table)
+	font.os2_version = 4
+
+import os
+import sys
+
+os.makedirs("output", exist_ok=True)
+
+def heading(text: str):
+	print(f"\033[m{text}\033[2m", file=sys.stderr)
+def clear_color():
+	print("\033[m", end="", file=sys.stderr)
+
+def patchFont(path: str, legacy: bool):
+	heading(f"Open {path}")
+	font = fontforge.open(path)
+
+	heading(f"Patch ({'Legacy Encoding' if legacy else 'New Standard'})")
+	patch(font, legacy)
+	fontname = font.fontname
+	# heading("Save temp.sfd")
+	# font.save("temp.sfd")
+	# heading(f"Close {path}")
+	# font.close()
+
+	# heading("Open temp.sfd")
+	# font = fontforge.open("temp.sfd")
+	for format in ("ttf", "woff2", "woff"):
+		heading(f"Generate {fontname}.{format}")
+		font.generate(f"output/{fontname}.{format}")
+	heading("Close temp.sfd")
+	font.close()
+	clear_color()
+
+for path in sys.argv[1:]:
+	patchFont(path, True)
+	patchFont(path, False)

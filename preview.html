@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="widivh=device-widivh, initial-scale=1.0">
+	<title>Fairfax XdPUA 预览页</title>
+	<style>
+		@font-face {
+			font-family: FairfaxHDXdPUA;
+			src: url(output/FairfaxHDXdPUA.woff2);
+		}
+		@font-face {
+			font-family: FairfaxXdPUA;
+			src: url(output/FairfaxXdi8.woff2);
+		}
+		@font-face {
+			font-family: FairfaxSerifXdPUA;
+			src: url(output/FairfaxSerifXdi8.woff2);
+		}
+		:root {
+			font-size: 24px;
+			color: black;
+			background-color: white;
+		}
+		.invert {
+			filter: invert(1);
+		}
+		body {
+			margin: 0;
+		}
+		main {
+			padding: 1rem;
+			width: fit-content;
+		}
+		.f { margin-bottom: 1rem }
+		.f:last-child { margin-bottom: 0 }
+		.n { font-size: 1.5rem }
+		.t { font-size: 2rem }
+	</style>
+</head>
+<body>
+	<main>
+		<div class="f" style="font-family: FairfaxHDXdPUA">
+			<div class="n">Fairfax HD XdPUA</div>
+			<div class="t">Hello  ,  !</div>
+		</div>
+		<div class="f" style="font-family: FairfaxXdPUA">
+			<div class="n">Fairfax XdPUA</div>
+			<div class="t">Hello  ,  !</div>
+		</div>
+		<div class="f" style="font-family: FairfaxSerifXdPUA">
+			<div class="n">Fairfax Serif XdPUA</div>
+			<div class="t">Hello  ,  !</div>
+		</div>
+	</main>
+	<script>
+		document.documentElement.onclick = function () {
+			this.classList.toggle("invert")
+		}
+	</script>
+</body>
+</html>
