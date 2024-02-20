@@ -82,27 +82,36 @@ def heading(text: str):
 def clear_color():
 	print("\033[m", end="", file=sys.stderr)
 
-def patchFont(path: str, legacy: bool):
-	heading(f"Open {path}")
-	font = fontforge.open(path)
+def patchFont(
+	path: str,
+	legacy: bool,
+	*,
+	formats: tuple[str] = ("ttf", "woff2", "woff"),
+):
+	try:
+		heading(f"Open {path}")
+		font = fontforge.open(path)
 
-	heading(f"Patch ({'Legacy Encoding' if legacy else 'New Standard'})")
-	patch(font, legacy)
-	fontname = font.fontname
-	# heading("Save temp.sfd")
-	# font.save("temp.sfd")
-	# heading(f"Close {path}")
-	# font.close()
+		heading(f"Patch ({'Legacy Encoding' if legacy else 'New Standard'})")
+		patch(font, legacy)
+		fontname = font.fontname
+		for format in formats:
+			heading(f"Generate {fontname}.{format}")
+			font.generate(f"output/{fontname}.{format}")
+		heading(f"Close {path}")
+		font.close()
+		clear_color()
+	except BaseException as e:
+		clear_color()
+		raise e
 
-	# heading("Open temp.sfd")
-	# font = fontforge.open("temp.sfd")
-	for format in ("ttf", "woff2", "woff"):
-		heading(f"Generate {fontname}.{format}")
-		font.generate(f"output/{fontname}.{format}")
-	heading("Close temp.sfd")
-	font.close()
-	clear_color()
+def patchBothEncodings(path: str, **kwargs):
+	patchFont(path, True, **kwargs)
+	patchFont(path, False, **kwargs)
 
-for path in sys.argv[1:]:
-	patchFont(path, True)
-	patchFont(path, False)
+patchBothEncodings("input/FairfaxHD.ttf")
+patchBothEncodings("input/Fairfax.ttf")
+patchBothEncodings("input/FairfaxSMHD.ttf", formats=("ttf",))
+patchBothEncodings("input/FairfaxSM.ttf", formats=("ttf",))
+patchBothEncodings("input/FairfaxSerif.ttf")
+patchBothEncodings("input/FairfaxSerifSM.ttf", formats=("ttf",))

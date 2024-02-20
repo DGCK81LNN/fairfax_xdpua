@@ -64,6 +64,9 @@ Shidinn charactes do not have serifs in the serif versions, only regular charact
 严格等宽版本删去了所有宽度与基本 ASCII 不同的字符，包括结合字符、全角字符和希顶汉字。一般来说您**不应该**使用这些版本。\
 The strictly monospaced versions have all characters not the same width as basic ASCII removed, including combinig characters, double-width characters and Shidinn Hanzi. Usually you **should not** use such versions.
 
+严格等宽版本只提供 TTF 格式。\
+Strictly monospaced versions are only built in TTF format.
+
 ### 编码<br>Encodings
 
 <table>
