@@ -80,7 +80,7 @@ The strictly monospaced versions have all characters not the same width as basic
 </tr>
 <tr>
 <td>Xdi8</th>
-<td>希顶协调码（仅部分支持）<br>Shidinn Conventional Encoding (partial support only)</td>
+<td>实验性：希顶协调码（仅部分支持）<br>experimantal Shidinn Conventional Encoding (partial support only)</td>
 </tr>
 </tbody>
 </table>
@@ -119,7 +119,7 @@ Codepoints for Basic Shidinn Letters and non-Shidinn-letter characters are the s
 ## 构建<br>Build
 
 确保已安装 FontForge，然后运行以下命令。必要时在 `ffpython` 前添加路径。\
-Make sure FontForge is installed, then run the following command. Prepend `ffpython` with its directory path when necessary.
+Make sure FontForge is installed, then run the following command. Prepend `ffpython` with path when necessary.
 
 ~~~shell
 ffpython patch.fontforge.py input/*
