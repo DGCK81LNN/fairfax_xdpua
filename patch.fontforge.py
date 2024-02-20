@@ -100,10 +100,8 @@ def patchFont(
 			font.generate(f"output/{fontname}.{format}")
 		heading(f"Close {path}")
 		font.close()
+	finally:
 		clear_color()
-	except BaseException as e:
-		clear_color()
-		raise e
 
 def patchBothEncodings(path: str, **kwargs):
 	patchFont(path, True, **kwargs)
